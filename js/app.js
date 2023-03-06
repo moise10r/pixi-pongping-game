@@ -577,7 +577,232 @@ room.game = {
 };
 
 
-
+room.score = {
+    data: {
+        stage: new Container(),
+        base: {
+            completion: 100000,
+            speed: 500,
+            time: 50000,
+            difficulty: 1000
+        },
+        score: {
+            earned: 0,
+            completion: 0,
+            speed: 0,
+            time: 0,
+            difficulty: 0,
+            total: 0
+        },
+        ticker: {
+            earned: 0,
+            completion: 0,
+            speed: 0,
+            time: 0,
+            difficulty: 0,
+            total: 0,
+            whoIs: 0,
+            reset: function() {
+                this.earned = 0;
+                this.completion = 0;
+                this.speed = 0;
+                this.time = 0;
+                this.difficulty = 0;
+                this.total = 0;
+                this.whoIs = 0;
+            }
+        }
+        
+    },
+    methods: {
+        finalized: function() {
+            if(room.score.ticker.total !== room.score.score.total) {
+                room.score.ticker.completion = room.score.score.completion;
+                room.score.ticker.difficulty = room.score.score.difficulty;
+                room.score.ticker.time = room.score.score.time;
+                room.score.ticker.earned = room.score.score.earned;
+                room.score.ticker.speed = room.score.score.speed;
+                room.score.ticker.total = room.score.score.total;
+            }
+            else {
+                setRoom(room.menu, true);
+            }
+        }
+    },
+    init: function() {
+        for(let key in this.data) {
+            this[key] = this.data[key];
+        }
+        for(let key in this.methods) {
+            this[key] = this.methods[key];
+        }
+    },
+    setup: function() {
+        this.init.bind(this)();
+        
+        //this.stage = createObject(new Container(), this.stage, 0, 0, 0, 0);
+        this.style = {
+            sub: new TextStyle({
+                fontFamily: 'Century Gothic',
+                fontSize: 30,
+                fill: ['#ffffff', '#8f8f8f']
+            }),
+            main: {
+                default: new TextStyle({
+                    fontFamily: 'Century Gothic',
+                    fontSize: 40,
+                    fill: ['#ffffff', '#8f8f8f']
+                }),
+                final: new TextStyle({
+                    fontFamily: 'Century Gothic',
+                    fontSize: 40,
+                    fill: ['#ffff00', '#8f8f00']
+                })
+            }
+        };
+        
+        let label = [ "Earned", "Completion Bonus", "Velocity Bonus", "Time Bonus", "Difficulty Bonus"];
+        this.numbers = [];
+        for(let i=0; i<label.length; ++i) {
+            let l = new Text(label[i], this.style.sub);
+            l.position.set(room.width * 0.52, (room.height / 10) + room.height * 0.1 * i);
+            this.stage.addChild(l);
+            
+            let s = new Text("0", this.style.sub);
+            s.position.set(room.width * 0.40, (room.height / 10) + room.height * 0.1 * i);
+            s.anchor.set(1, 0);
+            this.stage.addChild(s);
+            this.numbers.push(s);
+        }
+        
+        key.enter.addReleaseEvent(function() {
+            if(!room.current.compare(room.score)) return;
+            this.finalized();
+        }, this);
+        
+        this.total = {
+            label: new Text("Total", this.style.main.default),
+            number: new Text("0", this.style.main.default)
+        };
+        
+        this.total.label.position.set(room.width * 0.52, room.height * 0.65);
+        this.stage.addChild(this.total.label);
+        
+        this.total.number.position.set(room.width * 0.40, room.height * 0.65);
+        this.total.number.anchor.set(1, 0);
+        this.stage.addChild(this.total.number);
+        
+        
+        let inner = createObject(new Sprite(null), this.stage, 0, 0, 0, 0);
+        inner.width = room.width;
+        inner.height = room.height;
+        
+        inner.interactive = true;
+		inner.buttonMode = true;
+        
+        inner.on('pointerup', function() {
+            this.finalized();
+        }.bind(this));
+        
+        inner.on('pointerupoutside', function() {
+            this.finalized();
+        }.bind(this));
+        
+        loaded();
+    },
+    loop: function() {
+        switch(this.ticker.whoIs) {
+            case 0: 
+                if(this.ticker.earned >= this.score.earned) {
+                    this.ticker.earned = this.score.earned;
+                    this.numbers[this.ticker.whoIs].text = this.ticker.earned;
+                    this.ticker.whoIs++;
+                    break;
+                }
+                this.ticker.earned += 7777;
+                this.numbers[this.ticker.whoIs].text = this.ticker.earned;
+                break;
+            case 1:
+                if(this.ticker.completion >= this.score.completion) {
+                    this.ticker.completion = this.score.completion;
+                    this.numbers[this.ticker.whoIs].text = this.ticker.completion;
+                    this.ticker.whoIs++;
+                    break;
+                }
+                this.ticker.completion += 4545;
+                this.numbers[this.ticker.whoIs].text = this.ticker.completion;
+                break;
+            case 2:
+                if(this.ticker.speed >= this.score.speed) {
+                    this.ticker.speed = this.score.speed;
+                    this.numbers[this.ticker.whoIs].text = this.ticker.speed;
+                    this.ticker.whoIs++;
+                    break;
+                }
+                this.ticker.speed += 777;
+                this.numbers[this.ticker.whoIs].text = this.ticker.speed;
+                break;
+            case 3:
+                if(this.ticker.time >= this.score.time) {
+                    this.ticker.time = this.score.time;
+                    this.numbers[this.ticker.whoIs].text = this.ticker.time;
+                    this.ticker.whoIs++;
+                    break;
+                }
+                this.ticker.time += 7777;
+                this.numbers[this.ticker.whoIs].text = this.ticker.speed;
+                break;
+            case 4:
+                if(this.ticker.difficulty >= this.score.difficulty) {
+                    this.ticker.difficulty = this.score.difficulty;
+                    this.numbers[this.ticker.whoIs].text = this.ticker.difficulty;
+                    this.ticker.whoIs++;
+                    break;
+                }
+                this.ticker.difficulty += 333;
+                this.numbers[this.ticker.whoIs].text = this.ticker.difficulty;
+                break;
+            case 5:
+                if(this.ticker.total >= this.score.total) {
+                    this.ticker.total = this.score.total;
+                    this.total.number.text = this.ticker.total;
+                    this.total.number.style = this.style.main.final;
+                    this.total.label.style = this.style.main.final;
+                    this.ticker.whoIs++;
+                    break;
+                }
+                this.ticker.total += 11223;
+                this.total.number.text = this.ticker.total;
+                break;
+        }
+    },
+    reset: function() {
+        this.score.earned = room.game.score;
+        
+        let brickRatio = 1 - (room.game.bricks.available.length / room.game.bricks.children.length);
+        this.score.completion = Math.floor(this.base.completion * brickRatio);
+        
+        
+        
+        this.score.speed = Math.floor(this.base.speed * room.game.ball.velocity);
+        
+        this.score.time = Math.floor( Mathf.clamp(this.score.time = 
+                (this.base.time - room.game.frames) * brickRatio,
+                1000, this.base.time));
+        this.score.difficulty = this.base.difficulty * (Number(room.game.difficulty) + 1);
+        this.score.total = this.score.earned + this.score.completion + this.score.speed
+                + this.score.time + this.score.difficulty;
+        
+        this.ticker.reset.bind(this.ticker)();
+        for(let i=0; i<this.numbers.length; i++) {
+            this.numbers[i].text = 0;
+        }
+        
+        this.total.number.text = 0;
+        this.total.number.style = this.style.main.default;
+        this.total.label.style = this.style.main.default;
+    }
+};
 
 function setup() {
     textures = resources['assets/pongping.json'].textures;
