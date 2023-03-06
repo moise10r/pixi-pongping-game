@@ -60,3 +60,66 @@ class Mathf {
         return angle;
     }
 }
+
+class Key {
+    constructor(key) {
+        this.keys = [];
+        if(key.constructor === Array) {
+            for(let i in key) {
+                this.keys.push(key[i]);
+            }
+        }
+        else {
+            this.keys.push(key);
+        }
+        this.up = true;
+        this.down = false;
+        this.press = [];
+        this.release = [];
+        this.onUp = function(event) {
+            if(this.up) return;
+            if(this.containKey(event.keyCode)) {
+                this.up = true;
+                this.down = false;
+                for(let i in this.release) {
+                    if(this.release[i].bind !== null) this.release[i].method.bind(this.release[i].bind)();
+                    else this.release[i].method();
+                }
+            }
+            event.preventDefault();
+        };
+        this.onDown = function(event) {
+            if(this.down) return;
+            if(this.containKey(event.keyCode)) {
+                this.up = false;
+                this.down = true;
+                for(let i in this.press) {
+                    if(this.press[i].bind !== null) this.press[i].method.bind(this.press[i].bind)();
+                    else this.press[i].method();
+                }
+            }
+            event.preventDefault();
+        };
+        window.addEventListener('keydown', this.onDown.bind(this), false);
+        window.addEventListener('keyup', this.onUp.bind(this), false);
+    }
+    
+    containKey(code) {
+        return this.keys.indexOf(code) > -1;
+    }
+    
+    addPressEvent(callback, bindTo = null) {
+        this.press.push( { method: callback, bind: bindTo } );
+    }
+    
+    addReleaseEvent(callback, bindTo = null) {
+        this.release.push( { method: callback, bind: bindTo } );
+        
+    }
+    
+    clear() {
+        this.press = [];
+        this.release = [];
+    }
+}
+
