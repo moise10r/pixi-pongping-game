@@ -44,4 +44,39 @@ room = {
 };
 
 
+const styles = {
+    title: new PIXI.TextStyle({
+        fontFamily: 'Century Gothic',
+        fontSize: 48,
+        fontWeight: 'bold',
+        fill: ['#ffffff', '#8f8f8f'], 
+        wordWrap: true,
+        wordWrapWidth: 440
+    }),
+    subtitle:  new PIXI.TextStyle({
+        fontFamily: 'Century Gothic',
+        fontSize: 32,
+        fill: ['#ffffff', '#8f8f8f'],
+        wordWrap: true,
+        wordWrapWidth: 440
+    }),
+    menu: {
+        default: new PIXI.TextStyle({
+            fontFamily: 'Century Gothic',
+            fontSize: 32,
+            fill: ['#ffffff', '#8f8f8f']
+        }),
+        selected: new PIXI.TextStyle({
+            fontFamily: 'Century Gothic',
+            fontSize: 32,
+            fill: ['#ffff00', '#8f8f00']
+        })
+    },
+    debug: new PIXI.TextStyle({
+            fontFamily: 'Century Gothic',
+            fontSize: 12,
+            fill: ['#ffffff', '#8f8f8f']
+        })
+};
+
 
