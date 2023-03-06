@@ -254,6 +254,329 @@ room.menu = {
 };
 
 
+room.game = {
+    data: {
+        stage: new Container(),
+        difficulty: 0,
+        currentLoop: null,
+        maxVelocity: 30,
+        brickCount: {
+            row: 6,
+            col: 10
+        },
+        score: 0,
+        highscore: 0,
+        frames: 0,
+        bonus: {
+            brick: [ 4000, 5000, 6000 ]
+        }
+    },
+    methods: {
+        pause: function() {
+            
+        },
+        play: function() {
+            
+            if(this.bricks.available.length <= 0) {
+                setRoom(rm.score, true);
+            }
+            
+            
+            this.ball.x += this.ball.vx;
+            this.ball.y += this.ball.vy;
+            
+            //bounced to the wall
+            if(this.ball.x < room.bounds.left + this.ball.width/2) {
+                this.col = false;
+                this.bounce.bind(this.ball)();
+                this.moveDir(this.ball, this.ball.velocity, 
+                        -this.ball.vx, this.ball.vy);
+            }
+            
+            if(this.ball.x > room.bounds.right - this.ball.width/2) {
+                this.col = false;
+                this.bounce.bind(this.ball)();
+                this.moveDir(this.ball, this.ball.velocity, 
+                        -this.ball.vx, this.ball.vy);
+            }
+            
+            if(this.ball.y < room.bounds.top + this.ball.height/2) {
+                this.col = false;
+                this.bounce.bind(this.ball)();
+                this.moveDir(this.ball, this.ball.velocity, 
+                        this.ball.vx, -this.ball.vy);
+            }
+            
+            if(this.ball.y > room.bounds.bottom - this.ball.height/4) {
+                this.col = false;
+                setRoom(room.score, true);
+            }
+            
+            //bounced to bricks
+            for(let i in this.bricks.available) {
+                let col = b.hit(this.ball, this.bricks.available[i], true);
+                
+                if(col != null) {
+                    this.ball.col = false;
+                    if(col === 'bottom' || col === 'top') {
+                        this.moveDir(this.ball, this.ball.velocity, 
+                            this.ball.vx, -this.ball.vy);
+                    }
+                    else if(col === 'left' || col === 'right'){
+                        this.moveDir(this.ball, this.ball.velocity, 
+                            -this.ball.vx, this.ball.vy);
+                    }
+                    let diff = Number(room.game.difficulty);
+                    
+                    this.score += 50 + Mathf.clamp(this.bonus.brick[diff] - this.frames,
+                                299, this.bonus.brick[diff]);
+                    this.bricks.available[i].visible = false;
+                    this.bricks.available = 
+                            this.bricks.available.filter(function(obj) {
+                                return obj.visible;
+                            });
+                    break;
+                }
+            }
+            
+            //bounced to the player
+            let col = b.hit(this.ball, this.player, true, false);
+            
+            if(col != null) {
+                if(this.ball.col) return;
+                this.ball.col = true;
+                this.bounce.bind(this.ball)();
+                if(col === 'bottom' || col === 'top') {
+                    if(this.ball.side) return;
+                    let dir = -this.ball.vx/Math.abs(this.ball.vx);
+                    let dist = ((this.ball.x - this.player.x) / (this.player.width/2)) * dir;
+                    let angle = Mathf.clamp360(Mathf.deg(Math.atan2(-this.ball.vy, this.ball.vx)));
+                    
+                    if(angle > 270) {
+                        //angle = Math.clamp();
+                        angle += 50 * dist;
+                        angle = Mathf.rad(Mathf.clamp(angle, 290, 340));
+                    }
+                    else {
+                        angle += 50 * dist;
+                        angle = Mathf.rad(Mathf.clamp(angle, 200, 250));
+                        
+                    }
+                    
+                    this.moveDir(this.ball, this.ball.velocity, 
+                        Math.cos(angle), -Math.abs(Math.sin(angle)));
+                        //this.ball.vx, -this.ball.vy);
+                        
+                        /*
+                    this.ball.y = col === 'bottom' ? 
+                            this.player.y - this.ball.height/2 - this.player.height/2 - 1 : 
+                            this.player.y + this.ball.height/2 + this.player.height/2 + 1;
+                            */
+                    this.ball.y = this.player.y - this.ball.height/2 - this.player.height/2 - 1 ;
+               }
+               else if(col === 'left' || col === 'right') {
+                    this.moveDir(this.ball, this.ball.velocity, 
+                        -this.ball.vx, this.ball.vy);
+                    this.ball.side = true;
+               }
+            }
+            
+            if(key.left.down && !this.ball.side) {
+                    this.player.x -= key.shift.down ? this.player.move.slow 
+                            : this.player.move.default;
+            }
+
+            if(key.right.down && !this.ball.side) {
+                this.player.x += key.shift.down ? this.player.move.slow 
+                        : this.player.move.default;
+            }
+            
+            this.player.y = this.player.py;
+            this.player.x = Mathf.clamp(this.player.x, room.bounds.left 
+                    + this.player.width/2, room.bounds.right 
+                    - this.player.width/2);
+            
+            this.ball.x = Mathf.clamp(this.ball.x, room.bounds.left 
+                    + this.ball.width/2, room.bounds.right - this.ball.width/2);
+            this.ball.y = Mathf.clamp(this.ball.y, room.bounds.top 
+                    + this.ball.height/2, room.bounds.bottom);
+            
+            this.frames++;
+            if(this.yourscore.ticker < this.score) {
+                this.yourscore.ticker += 537;
+            }
+            if(this.yourscore.ticker > this.score) {
+                this.yourscore.ticker = this.score;
+            }
+            this.yourscore.text = this.yourscore.ticker;
+        },
+        bounce: function() {
+            this.velocity += 0.075 * (Number(room.game.difficulty) + 1);
+            this.sprites.next.bind(this)();
+        },
+        moveTo: function(obj, speed, x, y) {
+            if(speed > room.game.maxVelocity) speed = room.game.maxVelocity;
+            obj.velocity = speed;
+            let angle = Math.atan2(y - obj.y, x - obj.x);
+            obj.vx = speed * Math.cos(angle);
+            obj.vy = speed * Math.sin(angle);
+        },
+        moveDir: function(obj, speed, x, y) {
+            if(speed > room.game.maxVelocity) speed = room.game.maxVelocity;
+            obj.velocity = speed;
+            let angle = Math.atan2(y, x);
+            obj.vx = speed * Math.cos(angle);
+            obj.vy = speed * Math.sin(angle);
+        }
+    },
+    init: function() {
+        for(let key in this.data) {
+            this[key] = this.data[key];
+        }
+        for(let key in this.methods) {
+            this[key] = this.methods[key];
+        }
+    },
+    setup: function() {
+        this.init.bind(this)();
+        
+        //create horizontal wall
+        let tmp_wall = new Sprite(textures['wall.png']);
+        room.bounds.left = tmp_wall.width / 2;
+        room.bounds.right = room.width - room.bounds.left;
+        room.bounds.top = tmp_wall.height;
+        room.bounds.bottom = room.height - room.bounds.top;
+        
+        //walls
+        this.wall = createObject(new Container(), this.stage);
+        let hc = Math.floor(room.width / tmp_wall.width) + 1;
+        for(let i=0; i<hc; ++i) {
+            createObject(new Sprite(textures['wall.png']), this.wall,
+                    tmp_wall.width * (i - 0.25), 0);
+        }
+        
+        let vc = Math.floor(room.height / tmp_wall.height);
+        for(let i=0; i<vc; ++i) {
+            createObject(new Sprite(textures['wall.png']), this.wall,
+                    -tmp_wall.width/2, tmp_wall.height * (i+1));
+            createObject(new Sprite(textures['wall.png']), this.wall,
+                    room.bounds.right, tmp_wall.height * (i+1));
+        }
+        
+        this.player = createObject(new Sprite(textures['player.png']), 
+                    this.stage, room.width/2, room.height*0.9, 0.5);
+        this.player.move = {
+            default: room.width * 0.025,
+            slow: room.width * 0.008
+        };
+        
+        this.player.py = this.player.y;
+        
+        this.player.reset = function() {
+            this.position.set(room.width/2, room.height*0.9);
+        };
+        
+        this.bricks = createObject(new Container(), this.stage, 0, 0);
+        let tmp_brick = new Sprite(textures['brick.png']);
+        
+        
+        for(let i=0; i<this.brickCount.row; ++i) {
+            for(let j=0; j<this.brickCount.col; ++j) {
+                createObject(new Sprite(textures['brick.png']), 
+                        this.bricks, (tmp_brick.width + 1) * j,
+                        (tmp_brick.height + 1) * i);
+            }
+        }
+        
+        setPosition(this.bricks, room.width/2 - this.bricks.width/2, 
+                room.height * .3 - this.bricks.height/2);
+                
+        this.bricks.available = this.bricks.children;
+        
+        this.ball = createObject(new Sprite(textures['ball0.png']),
+                this.stage, 0, 0, 0.5, 0.5);
+                
+        this.ball.sprites = {
+            container: [],
+            index: 0,
+            next: function() {
+                this.sprites.index = Mathf.next(this.sprites.index, 0, this.sprites.container.length - 1);
+                this.setTexture(this.sprites.container[this.sprites.index]);
+            }
+        };
+        for(let i=0; i<8; ++i) {
+            this.ball.sprites.container.push(textures['ball' + i + ".png"]);
+        }
+        
+        this.ball.col = false;
+        
+        this.ball.reset = function() {
+            //this.ball.col.current = this.ball.col.none;
+            this.ball.col = false;
+            this.ball.side = false;
+            this.ball.position.set(Math.random() > 0.5 ? room.width/4 : 3*room.width/4, room.height/2);
+            this.ball.setTexture(this.ball.sprites.container[0]);
+            this.ball.spriteIndex = 0;
+            this.moveTo(this.ball, 4 + 1.5 * Number(this.difficulty), this.player.x, 
+                    this.player.y - this.player.height/2 - this.ball.height/2);
+        };
+        
+        this.debug = createObject(new Text("", styles.debug), this.stage, room.width/2, room.height/2, 0.5);
+        
+        this.yourscore = createObject(new Text("0", new TextStyle({
+            fontFamily: 'Century Gothic',
+            fontSize: 24,
+            fill: ['#ffffff', '#8f8f8f']
+        })), this.stage, room.width*0.5, room.height, 0, 1);
+        
+        this.yourscore.ticker = 0;
+        
+        this.yourscore.reset = function() {
+            this.ticker = 0;
+            this.text = "0";
+        };
+        
+        
+        this.diffText = createObject(new Text("diff", new TextStyle({
+            fontFamily: 'Century Gothic',
+            fontSize: 24
+        })), this.stage, room.width * 0.4, room.height, 1, 1);
+        
+        this.currentLoop = this.play;
+        loaded();
+    },
+    loop: function() {
+        if(this.currentLoop !== null) this.currentLoop.bind(this)();
+    },
+    reset: function() {
+        this.player.reset.bind(this.player)();
+        for(let i in this.bricks.children) {
+            this.bricks.children[i].visible = true;
+        }
+        this.bricks.available = this.bricks.children;
+        this.ball.reset.bind(this)();
+        this.yourscore.reset.bind(this.yourscore)();
+        this.frames = 0;
+        this.score = 0;
+        switch(Number(this.difficulty)) {
+            case 0: 
+                this.diffText.text = "Easy";
+                this.diffText.style.fill = ['#11ff00', '#00cc00'];
+                break;
+            case 1:
+                this.diffText.text = "Normal";
+                this.diffText.style.fill = ['#0011ff', '#0000cc'];
+                break;
+            case 2:
+                this.diffText.text = "Hard";
+                this.diffText.style.fill = ['#ff1100', '#cc0000'];
+                break;
+        };
+    }
+    
+};
+
+
 
 
 function setup() {
