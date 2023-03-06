@@ -80,3 +80,21 @@ const styles = {
 };
 
 
+function render() {
+    app.render();
+};
+
+function setLoop(rm) {
+    room.loop.bindTo = rm;
+    room.loop.method = rm.loop;
+}
+
+function setRoom(rm, reset=false) {
+    if(reset) resetRoom(rm);
+    room.current.set(rm.stage);
+    setLoop(rm);
+}
+
+function resetRoom(rm) {
+    rm.reset.bind(rm)();
+}
