@@ -20,4 +20,28 @@ app.view.style.display = "block";
 app.view.style.left = ((window.innerWidth - app.view.width)*0.5);
 app.view.style.top = ((window.innerHeight - app.view.height)*0.5);
 
+room = {
+    x: Number(app.view.style.left.toString().replace("px","").trim()),
+    y: Number(app.view.style.top.toString().replace("px","").trim()),
+    width: app.view.width,
+    height: app.view.height,
+    bounds: {},
+    current: {
+        get: function() {
+            return app.stage;
+        },
+        set: function(rm) {
+            app.stage = rm;
+        },
+        compare: function(rm) {
+            return rm.stage === app.stage;
+        }
+    },
+    loop: {
+        method: null,
+        bindTo: null
+    }
+};
+
+
 
