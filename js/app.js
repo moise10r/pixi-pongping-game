@@ -814,8 +814,8 @@ function setup() {
     };
     loaded();
     room.menu.setup.bind(room.menu)();
-    // room.game.setup.bind(room.game)();
-    // room.score.setup.bind(room.score)();
+    room.game.setup.bind(room.game)();
+    room.score.setup.bind(room.score)();
     setRoom(room.menu);
     loop();
 }
