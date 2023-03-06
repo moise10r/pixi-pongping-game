@@ -123,3 +123,34 @@ class Key {
     }
 }
 
+
+function createObject(obj, container, x=0, y=0, ax=0, ay=null, isCircular = false) {
+    setPosition(obj, x, y, ax, ay);
+    container.addChild(obj);
+    obj.isCircular = isCircular;
+    return obj;
+}
+
+function setPosition(obj, x=0, y=0, ax=0, ay=null) {
+    if(ay===null) ay = ax;
+    if(obj.anchor) obj.anchor.set(ax,ay);
+    obj.position.set(x,y);
+}
+
+function checkPointOnRectangle(x, y, rx, ry, w, h) {
+    return x >= rx && x <= rx + w && y >= ry && y <= ry + h;
+}
+
+function point(ix, iy) {
+    return {x: ix, y: iy};
+}
+
+function dimension(iw, ih) {
+    return {w: iw, h: ih};
+}
+
+function rect(ix, iy, iw, ih) {
+    return { x: ix, y: iy, w: iw, h: ih };
+}
+
+
