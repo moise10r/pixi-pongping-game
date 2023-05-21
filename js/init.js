@@ -1,6 +1,6 @@
 
 //aliases
-var Application = PIXI.Application,
+const Application = PIXI.Application,
     Container = PIXI.Container,
     Text = PIXI.Text,
     TextStyle = PIXI.TextStyle,
@@ -13,7 +13,7 @@ var Application = PIXI.Application,
     resources = PIXI.loader.resources
     b = new Bump(PIXI);
     
-var app = new Application(800, 600, { background: '#0f0f0f' });
+const app = new Application(800, 600, { background: '#0f0f0f' });
 
 app.view.style.position = "absolute";
 app.view.style.display = "block";
@@ -27,10 +27,10 @@ room = {
     height: app.view.height,
     bounds: {},
     current: {
-        get: function() {
+        get: () => {
             return app.stage;
         },
-        set: function(rm) {
+        set: (rm) => {
             app.stage = rm;
         },
         compare: function(rm) {
@@ -80,21 +80,21 @@ const styles = {
 };
 
 
-function render() {
+const render = () =>  {
     app.render();
 };
 
-function setLoop(rm) {
+const setLoop = (rm) => {
     room.loop.bindTo = rm;
     room.loop.method = rm.loop;
 }
 
-function setRoom(rm, reset=false) {
+const setRoom = (rm, reset=false) => {
     if(reset) resetRoom(rm);
     room.current.set(rm.stage);
     setLoop(rm);
 }
 
-function resetRoom(rm) {
+const resetRoom = (rm) => {
     rm.reset.bind(rm)();
 }
